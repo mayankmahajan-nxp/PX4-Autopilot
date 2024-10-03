@@ -245,6 +245,8 @@ TEST_F(CollisionPreventionTest, testBehaviorOnWithDistanceMessage)
 
 	EXPECT_FLOAT_EQ(cp.getObstacleMap().min_distance, 100);
 	EXPECT_FLOAT_EQ(cp.getObstacleMap().max_distance, 10000);
+	printf("modified_setpoint1: %f, %f\n", (double)modified_setpoint1(0), (double)modified_setpoint1(1));
+	printf("modified_setpoint2: %f, %f\n", (double)modified_setpoint2(0), (double)modified_setpoint2(1));
 	EXPECT_GT(0.f, modified_setpoint1(0)) << modified_setpoint1(0);
 	EXPECT_EQ(0.f, fabsf(modified_setpoint1(1))) << modified_setpoint1(1);
 	EXPECT_GT(0.f, modified_setpoint2(0))  << original_setpoint2(0);
