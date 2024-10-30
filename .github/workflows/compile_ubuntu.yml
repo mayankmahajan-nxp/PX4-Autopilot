@@ -15,6 +15,7 @@ jobs:
   build_and_test:
     name: Build and Test Ubuntu
     strategy:
+      fail-fast: false
       matrix:
         version: [ubuntu22, ubuntu24]
     runs-on: [runs-on,runner=8cpu-linux-x64,"image=${{ matrix.version }}-full-x64","run-id=${{ github.run_id }}"]
