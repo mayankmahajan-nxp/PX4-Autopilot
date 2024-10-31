@@ -230,6 +230,11 @@ bool Ekf::initialiseTilt()
 
 void Ekf::predictState(const imuSample &imu_delayed)
 {
+	if (std::fabs(_gpos.latitude_rad() - _earth_rate_lat_ref_rad) > math::radians(1.0)) {
+		_earth_rate_lat_ref_rad = _gpos.latitude_rad();
+		_earth_rate_NED = calcEarthRateNED((float)_earth_rate_lat_ref_rad);
+	}
+
 	// apply imu bias corrections
 	const Vector3f delta_ang_bias_scaled = getGyroBias() * imu_delayed.delta_ang_dt;
 	Vector3f corrected_delta_ang = imu_delayed.delta_ang - delta_ang_bias_scaled;
@@ -254,8 +259,11 @@ void Ekf::predictState(const imuSample &imu_delayed)
 	// calculate the increment in velocity using the current orientation
 	_state.vel += corrected_delta_vel_ef;
 
-	// compensate for acceleration due to gravity
-	_state.vel(2) += CONSTANTS_ONE_G * imu_delayed.delta_vel_dt;
+	// compensate for acceleration due to gravity, Coriolis and transport rate
+	const Vector3f gravity_acceleration(0.f, 0.f, -CONSTANTS_ONE_G); // simplistic model
+	const Vector3f coriolis_acceleration = 2.f * _earth_rate_NED.cross(vel_last);
+	const Vector3f transport_rate = _gpos.computeAngularRateNavFrame(vel_last).cross(vel_last);
+	_state.vel -= (gravity_acceleration + coriolis_acceleration + transport_rate) * imu_delayed.delta_vel_dt;
 
 	// predict position states via trapezoidal integration of velocity
 	_gpos += (vel_last + _state.vel) * imu_delayed.delta_vel_dt * 0.5f;
