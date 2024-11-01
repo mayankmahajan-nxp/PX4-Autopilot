@@ -1116,7 +1116,7 @@ private:
 
 			status.test_ratio[i] = test_ratio;
 
-			status.observation[i] = observation(i);
+			status.observation[i] = static_cast<double>(observation(i));
 			status.observation_variance[i] = observation_variance(i);
 
 			status.innovation[i] = innovation(i);
