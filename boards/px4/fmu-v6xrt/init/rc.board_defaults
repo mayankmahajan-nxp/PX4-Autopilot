@@ -18,6 +18,18 @@ param set-default SENS_EN_INA238 0
 param set-default SENS_EN_INA228 0
 param set-default SENS_EN_INA226 0
 
+# using dronecan without DNA server.
+param set-default -s UAVCAN_ENABLE 1
+# manually setting node id, as i was facing issue with two rt7 connected together;
+	# they were (by default) being assigned the same node id, that is one (1).
+param set-default -s UAVCAN_NODE_ID 3
+
+# only for testing; not necessary for dronecan.
+param set-default -s UAVCAN_SUB_BARO 1
+param set-default -s UAVCAN_SUB_GPS 1
+param set-default -s UAVCAN_SUB_IMU 1
+param set-default -s UAVCAN_SUB_MAG 1
+
 safety_button start
 
 if param greater -s UAVCAN_ENABLE 0
