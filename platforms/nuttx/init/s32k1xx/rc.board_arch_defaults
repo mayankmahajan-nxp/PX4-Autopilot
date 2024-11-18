@@ -5,9 +5,10 @@
 
 set LOGGER_BUF 8
 
-param set-default -s UAVCAN_ENABLE 1
-param set-default -s UAVCAN_NODE_ID 2
-uavcan start
+# actually, now it's working even without the following lines.
+# param set-default -s UAVCAN_ENABLE 1
+# param set-default -s UAVCAN_NODE_ID 2  # actually node id is being set to 120.
+# uavcan start
 
 if param greater -s UAVCAN_ENABLE 1
 then
