@@ -22,13 +22,13 @@ param set-default SENS_EN_INA226 0
 param set-default -s UAVCAN_ENABLE 1
 # manually setting node id, as i was facing issue with two rt7 connected together;
 	# they were (by default) being assigned the same node id, that is one (1).
-param set-default -s UAVCAN_NODE_ID 3
+param set-default -s UAVCAN_NODE_ID 3  # because setting 2 as node id of ucan.
 
 # only for testing; not necessary for dronecan.
-param set-default -s UAVCAN_SUB_BARO 1
-param set-default -s UAVCAN_SUB_GPS 1
-param set-default -s UAVCAN_SUB_IMU 1
-param set-default -s UAVCAN_SUB_MAG 1
+# param set-default -s UAVCAN_SUB_BARO 1
+# param set-default -s UAVCAN_SUB_GPS 1
+# param set-default -s UAVCAN_SUB_IMU 1
+# param set-default -s UAVCAN_SUB_MAG 1
 
 safety_button start
 

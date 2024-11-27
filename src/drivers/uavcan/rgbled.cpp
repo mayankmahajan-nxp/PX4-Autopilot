@@ -42,11 +42,12 @@ UavcanRGBController::UavcanRGBController(uavcan::INode &node) :
 	_uavcan_pub_lights_cmd.setPriority(uavcan::TransferPriority::Lowest);
 }
 
-int UavcanRGBController::init()
+int UavcanRGBController::init() /* Mayank Mahajan */
 {
 	// Setup timer and call back function for periodic updates
 	_timer.setCallback(TimerCbBinder(this, &UavcanRGBController::periodic_update));
-	_timer.startPeriodic(uavcan::MonotonicDuration::fromMSec(1000 / MAX_RATE_HZ));
+	// reducing frequency of timer from 50 Hz to 0.04 Hz for testing purposes.
+	_timer.startPeriodic(uavcan::MonotonicDuration::fromMSec(50000 / MAX_RATE_HZ));
 	return 0;
 }
 
@@ -174,7 +175,7 @@ void UavcanRGBController::periodic_update(const uavcan::TimerEvent &)
 		}
 	}
 
-	if (publish_lights) {
+	if (publish_lights) { /* Mayank Mahajan */
 		_uavcan_pub_lights_cmd.broadcast(cmds);
 	}
 }

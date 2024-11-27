@@ -43,11 +43,13 @@ int GenericPublisherBase::genericPublish(const StaticTransferBufferImpl& buffer,
 {
     if (tid)
     {
+        printf("hello 33333333333333333\n");
         return sender_.send(buffer.getRawPtr(), buffer.getMaxWritePos(), getTxDeadline(),
                             blocking_deadline, transfer_type, dst_node_id, *tid);
     }
     else
     {
+        printf("hello 88888888888888888\n");
         return sender_.send(buffer.getRawPtr(), buffer.getMaxWritePos(), getTxDeadline(),
                             blocking_deadline, transfer_type, dst_node_id);
     }
