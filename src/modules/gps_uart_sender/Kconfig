@@ -1,0 +1,5 @@
+menuconfig MODULES_GPS_UART_SENDER
+	bool "gps_uart_sender"
+	default y
+	---help---
+		Enable support for gps_uart_sender
