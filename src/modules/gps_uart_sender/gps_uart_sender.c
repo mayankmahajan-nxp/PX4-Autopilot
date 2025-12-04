@@ -63,6 +63,27 @@ __EXPORT int gps_uart_sender_main(int argc, char *argv[]);
 #include <termios.h>
 #include <string.h>
 #include <errno.h>
+#include <stdint.h>
+
+static void pack_two_floats_le(float f1, float f2, uint8_t out[8]) {
+    // Define payload endianness explicitly; here little-endian.
+    memcpy(&out[0], &f1, sizeof(float));
+    memcpy(&out[4], &f2, sizeof(float));
+}
+
+/* CRC-16/CCITT-FALSE: poly 0x1021, init 0xFFFF, no reflection, no final XOR */
+static uint16_t crc16_ccitt_false(const uint8_t *data, size_t len) {
+    uint16_t crc = 0xFFFF;
+    for (size_t i = 0; i < len; ++i) {
+        crc ^= (uint16_t)data[i] << 8;
+        for (int b = 0; b < 8; ++b) {
+            crc = (crc & 0x8000) ? (uint16_t)((crc << 1) ^ 0x1021) : (uint16_t)(crc << 1);
+        }
+    }
+    return crc;
+}
+
+#define HDR_BYTE 0xA5
 
 int gps_uart_sender_main(int argc, char *argv[])
 {
@@ -74,8 +95,6 @@ int gps_uart_sender_main(int argc, char *argv[])
 		perror("open");
 		return 1;
 	}
-
-	const char *msg = "HELLO\n";  // ASCII example
 
 	int gps_sub = orb_subscribe(ORB_ID(sensor_gps));
 
@@ -96,7 +115,35 @@ int gps_uart_sender_main(int argc, char *argv[])
 			updated = false;
 		}
 
-		ssize_t written = write(fd, msg, strlen(msg));
+		// float lat_f = (float)gps_data.latitude_deg;
+		// float lon_f = (float)gps_data.longitude_deg;
+
+		static float lat_f = 25.265f;
+		static float lon_f = 45.886f;
+
+		uint8_t payload[8];
+		lat_f += 1.0f;
+		lon_f -= 1.0f;
+		pack_two_floats_le(lat_f, lon_f, payload);
+
+		const uint8_t payload_len = sizeof(payload); // 8
+
+		// CRC over [LEN || PAYLOAD] (recommended)
+		uint8_t crc_buf[1 + sizeof(payload)];
+		crc_buf[0] = payload_len;
+		memcpy(&crc_buf[1], payload, sizeof(payload));
+		uint16_t crc = crc16_ccitt_false(crc_buf, sizeof(crc_buf));
+
+		uint8_t frame[1 + 1 + 8 + 2]; // HDR + LEN + PAYLOAD + CRC16
+		size_t idx = 0;
+		frame[idx++] = HDR_BYTE;
+		frame[idx++] = payload_len;
+		memcpy(&frame[idx], payload, payload_len);
+		idx += payload_len;
+		frame[idx++] = (uint8_t)(crc >> 8);   // big-endian CRC on the wire
+		frame[idx++] = (uint8_t)(crc & 0xFF);
+
+		ssize_t written = write(fd, frame, sizeof(frame));
 		if (written < 0) {
 			perror("write");
 		} else {
