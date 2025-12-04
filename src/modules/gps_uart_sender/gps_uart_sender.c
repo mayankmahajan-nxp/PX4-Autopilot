@@ -56,9 +56,26 @@
 
 __EXPORT int gps_uart_sender_main(int argc, char *argv[]);
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <string.h>
+#include <errno.h>
+
 int gps_uart_sender_main(int argc, char *argv[])
 {
 	PX4_INFO("Starting GPS UART SENDER.");
+
+	const char *device = "/dev/ttyS5";  // TELEM2
+	int fd = open(device, O_WRONLY);
+	if (fd < 0) {
+		perror("open");
+		return 1;
+	}
+
+	const char *msg = "HELLO\n";  // ASCII example
 
 	int gps_sub = orb_subscribe(ORB_ID(sensor_gps));
 
@@ -77,6 +94,13 @@ int gps_uart_sender_main(int argc, char *argv[])
 			orb_copy(ORB_ID(sensor_gps), gps_sub, &gps_data);
 			printf("Lat: %lld, Lon: %lld\n", (long long)gps_data.latitude_deg, (long long)gps_data.longitude_deg);
 			updated = false;
+		}
+
+		ssize_t written = write(fd, msg, strlen(msg));
+		if (written < 0) {
+			perror("write");
+		} else {
+			printf("Sent %zd bytes\n", written);
 		}
 
 		usleep(2000000);
@@ -147,6 +171,8 @@ int gps_uart_sender_main(int argc, char *argv[])
 			 */
 		}
 	}
+
+	close(fd);
 
 	PX4_INFO("exiting");
 
